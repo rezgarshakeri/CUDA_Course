@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <cuda_runtime.h>
 
+// code --diff section3_005.cu section3_005Copy.cu
+
 #define SIZE 1024*1024*32  // Define the size of the vectors
 
 // CUDA Kernel for vector addition

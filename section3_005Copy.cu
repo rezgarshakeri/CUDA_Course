@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <cuda_runtime.h>
 
-#define SIZE 1024*1024*32  // Define the size of the vectors
+#define SIZE 1024*1024*432  // Define the size of the vectors
 
 // CUDA Kernel for vector addition
 __global__ void vectorAdd(int *A, int *B, int *C, int n) {
@@ -43,7 +43,7 @@ int main() {
     cudaEventRecord(start);
 
     // Launch the Vector Add CUDA Kernel
-    int threadsPerBlock = 96;
+    int threadsPerBlock = 128;
     int blocksPerGrid = (SIZE + threadsPerBlock - 1) / threadsPerBlock;
     vectorAdd<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, SIZE);
 
@@ -57,7 +57,7 @@ int main() {
     cudaEventSynchronize(stop);
     float milliseconds = 0;
     cudaEventElapsedTime(&milliseconds, start, stop);
-    printf("Execution time: %f milliseconds\n", milliseconds);
+    printf("Execution time with num_blocks = %d and threads_per_block = %d: %f milliseconds\n", blocksPerGrid, threadsPerBlock, milliseconds);
 
     // Cleanup
     cudaFree(d_A);

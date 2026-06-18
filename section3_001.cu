@@ -3,6 +3,8 @@
 #include "device_launch_parameters.h"
 #include <stdio.h>
 
+//  nvcc section3_001.cu -o section3_001 -arch=sm_120
+
 __global__ void test01()
 {
     //print the blocks and threads IDs
