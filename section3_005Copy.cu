@@ -1,5 +1,12 @@
 #include <stdio.h>
 #include <cuda_runtime.h>
+/*
+Profiling with ncu ./vecadd
+
+if you get The user does not have permission to access NVIDIA GPU Performance Counters. Find ncu path by which ncu and run:
+sudo ncu_path/ncu ./vecadd
+*/
+
 
 #define SIZE 1024*1024*432  // Define the size of the vectors
 
@@ -43,9 +50,14 @@ int main() {
     cudaEventRecord(start);
 
     // Launch the Vector Add CUDA Kernel
-    int threadsPerBlock = 128;
+    int threadsPerBlock = 64;
     int blocksPerGrid = (SIZE + threadsPerBlock - 1) / threadsPerBlock;
     vectorAdd<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, SIZE);
+    // Check for immediate launch errors
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("CUDA Error: %s\n", cudaGetErrorString(err));
+    }
 
     // Stop recording
     cudaEventRecord(stop);
