@@ -75,10 +75,34 @@ int main() {
     cudaEventRecord(start);
 
     // Launch the Vector Add CUDA Kernel
-    int threadsPerBlock = 96;
+    int threadsPerBlock = 512;
     int blocksPerGrid = (SIZE + threadsPerBlock - 1) / threadsPerBlock;
     vectorAdd<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, SIZE);
     gpuKernelCheck();
+
+    int maxActiveBlocks;
+    // This calculates the maximum blocks per SM for your specific kernel
+    cudaOccupancyMaxActiveBlocksPerMultiprocessor(
+        &maxActiveBlocks, 
+        vectorAdd,       // Name of your __global__ kernel function
+        threadsPerBlock,             // The block size you chose (threads per block)
+        0                // Dynamic shared memory usage in bytes (0 if none)
+    );
+
+    printf("For this kernel, each SM can hold %d blocks simultaneously.\n", maxActiveBlocks);
+    /*
+    Note Max_threads_per_SM  0: 1536 so 1536 = maxActiveBlocks * threadsPerBlock, gives 100% occupancy (ideal case).
+
+    Every block you create requires a tiny bit of hardware management overhead from the GPU scheduler.
+    Managing 16 blocks per SM takes more scheduling effort than managing 6 blocks.
+    By using 256 threads, you make the scheduler's job easier.
+
+    Occupancy is just a metric of how many threads are present, not how fast they are executing.
+    While 96 threads gave you an $84\%$ Achieved Occupancy vs. $80\%$ for 512 threads,
+    the 96-thread version has to manage over 5 times as many blocks total across the grid.
+    The hardware overhead of creating, scheduling, and destroying all those extra blocks can
+    sometimes completely wipe out the minor $4\%$ gain in occupancy.
+    */
 
     // Stop recording
     cudaEventRecord(stop);
