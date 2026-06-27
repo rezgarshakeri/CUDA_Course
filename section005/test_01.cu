@@ -23,7 +23,7 @@ inline void gpuKernelAssert(const char *file, int line, bool abort=true) {
 // CUDA Kernel for vector addition
 __global__ void vectorAdd(int *A, int *B, int *C, int n) {
     int ix = threadIdx.x + blockDim.x * blockIdx.x;
-    if (i < n) {
+    if (ix < n) {
         C[ix] = A[ix] + B[ix];
     }
 }
@@ -48,6 +48,11 @@ int main(int argc, char **argv) {
     long size = SIZE * sizeof(int);
 
     // CUDA event creation, used for timing
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    // CUDA event creation, used for timing
     // Allocate device vectors
     cudaCheckError(cudaMalloc((void **)&d_A, size));
     cudaCheckError(cudaMalloc((void **)&d_B, size));
@@ -65,6 +70,9 @@ int main(int argc, char **argv) {
     // Copy host vectors to device
     cudaMemcpy(d_A, A, size, cudaMemcpyHostToDevice);
     cudaMemcpy(d_B, B, size, cudaMemcpyHostToDevice);
+
+    // Start recording
+    cudaEventRecord(start);
 
     // Launch the Vector Add CUDA Kernel
     int blocksPerGrid = (SIZE + threadsPerBlock - 1) / threadsPerBlock;
