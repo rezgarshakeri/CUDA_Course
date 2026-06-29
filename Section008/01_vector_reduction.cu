@@ -1,6 +1,9 @@
 #include <iostream>
 #include <cuda_runtime.h>
 
+// ncu --set full -o profile_01 ./test_01
+// ncu-ui profile_01.ncu-rep 
+
 __global__ void reduce_in_place(float* input, int n) {
     int tid = threadIdx.x;
     int index = blockIdx.x * blockDim.x + threadIdx.x;
